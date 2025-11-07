@@ -13,6 +13,13 @@ export class HttpClient {
   private static isHandling401 = false
 
   /**
+   * Reset 401 handling flag (call after successful login)
+   */
+  public reset401Flag(): void {
+    HttpClient.isHandling401 = false
+  }
+
+  /**
    * Show login required notification to user
    */
   private showLoginRequiredNotification(): void {
@@ -200,3 +207,6 @@ export class HttpClient {
 
 // Export singleton instance
 export const httpClient = new HttpClient()
+
+// Export helper function to reset 401 flag
+export const reset401Flag = () => httpClient.reset401Flag()

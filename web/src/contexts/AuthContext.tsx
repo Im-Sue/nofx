@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { getSystemConfig } from '../lib/config'
+import { reset401Flag } from '../lib/httpClient'
 
 interface User {
   id: string
@@ -58,6 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // Reset 401 flag on page load to allow fresh 401 handling
+    reset401Flag()
+
     // 先检查是否为管理员模式（使用带缓存的系统配置获取）
     getSystemConfig()
       .then(() => {
@@ -142,6 +146,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       const data = await response.json()
       if (response.ok) {
+        // Reset 401 flag on successful login
+        reset401Flag()
+
         const userInfo = {
           id: data.user_id || 'admin',
           email: data.email || 'admin@localhost',
@@ -216,6 +223,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json()
 
       if (response.ok) {
+        // Reset 401 flag on successful login
+        reset401Flag()
+
         // 登录成功，保存token和用户信息
         const userInfo = { id: data.user_id, email: data.email }
         setToken(data.token)
@@ -249,6 +259,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json()
 
       if (response.ok) {
+        // Reset 401 flag on successful login
+        reset401Flag()
+
         // 注册完成，自动登录
         const userInfo = { id: data.user_id, email: data.email }
         setToken(data.token)
