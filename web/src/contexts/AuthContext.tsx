@@ -85,6 +85,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
   }, [])
 
+  // Listen for unauthorized events from httpClient (401 responses)
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      console.log('Unauthorized event received - clearing auth state')
+      // Clear auth state when 401 is detected
+      setUser(null)
+      setToken(null)
+      // Note: localStorage cleanup is already done in httpClient
+    }
+
+    window.addEventListener('unauthorized', handleUnauthorized)
+
+    return () => {
+      window.removeEventListener('unauthorized', handleUnauthorized)
+    }
+  }, [])
+
   const login = async (email: string, password: string) => {
     try {
       const response = await fetch('/api/login', {
