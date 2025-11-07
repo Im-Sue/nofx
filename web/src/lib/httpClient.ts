@@ -9,6 +9,9 @@
  */
 
 export class HttpClient {
+  // Singleton flag to prevent duplicate 401 handling
+  private static isHandling401 = false
+
   /**
    * Show login required notification to user
    */
@@ -71,6 +74,14 @@ export class HttpClient {
   private async handleResponse(response: Response): Promise<Response> {
     // Handle 401 Unauthorized - Token expired or invalid
     if (response.status === 401) {
+      // Prevent duplicate 401 handling when multiple API calls fail simultaneously
+      if (HttpClient.isHandling401) {
+        throw new Error('登录已过期，请重新登录')
+      }
+
+      // Set flag to prevent race conditions
+      HttpClient.isHandling401 = true
+
       // Clean up local storage
       localStorage.removeItem('auth_token')
       localStorage.removeItem('auth_user')
@@ -78,7 +89,7 @@ export class HttpClient {
       // Notify global listeners (AuthContext will react to this)
       window.dispatchEvent(new Event('unauthorized'))
 
-      // Show user-friendly notification
+      // Show user-friendly notification (only once)
       this.showLoginRequiredNotification()
 
       // Delay redirect to let user see the notification
@@ -93,6 +104,7 @@ export class HttpClient {
 
           window.location.href = '/login'
         }
+        // Note: No need to reset flag since we're redirecting
       }, 1500) // 1.5秒延迟,让用户看到提示
 
       throw new Error('登录已过期，请重新登录')
